@@ -1,26 +1,28 @@
 /*  TODO
 --alert when user connected
 --remove user from list on disconnect
+--highlight selected user
+--display messages from self differently
 --private messaging
-    --conditionally render chat display and input form
-    --sendPrivateMessage function
-    --recieve private message and push to messages array in user object
+--refactor on 'chat message', messageList, sendMessage to group messenging
 --persistant id using sessions and local storage
 --chat history using db
 */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createContext } from 'react'
 import './App.css'
 import io from 'socket.io-client'
 import './assets/ellipse.svg'
+import Chat from './components/Chat.jsx'
+import { UserContext } from './UserContext'
 
 const socket = io('http://localhost:3000', { autoConnect: false })
 
 function App() {
   const [usernameSelected, setUsernameSelected] = useState(false)
   const [username, setUsername] = useState('')  
-  const [isConnected, setIsConnected] = useState(socket.connected);
-  const [id, setId] = useState()
+  // const [isConnected, setIsConnected] = useState(socket.connected);
+  // const [id, setId] = useState()
   const [message, setMessage] = useState('')
   const [serverMessages, addServerMessage] = useState([])
   const [userList, setUserlist] = useState([])
@@ -33,14 +35,14 @@ function App() {
   }
 
   useEffect(() => {
-    socket.on('connect', () => {
-      setIsConnected(true);
-      setId(socket.id)
-    });
+    // socket.on('connect', () => {
+    //   setIsConnected(true);
+    //   setId(socket.id)
+    // });
 
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-    });
+    // socket.on('disconnect', () => {
+    //   setIsConnected(false);
+    // });
 
     socket.on('chat message', (msg) => {
       addServerMessage((prev) => [...prev, msg])
@@ -63,14 +65,29 @@ function App() {
     socket.on('user connected', (user) => {
       setUserlist(prev => [...prev, user])
     })
+
+    socket.on('private message', ({ content, from}) => {
+      console.log(content, from)
+      setUserlist(current =>
+          current.map(usr => {
+              if (usr.userID == from) {
+                  usr.messages.push({ content, fromSelf: false})
+                  //TODO: add hasNewMessages flag
+                  return usr
+              }
+              return usr
+          })    
+      )
+  })
     
     return () => {
-      socket.off('connect');
-      socket.off('disconnect');
+      // socket.off('connect');
+      // socket.off('disconnect');
       socket.off('chat message')
       socket.off('connect_error')
       socket.off('user connected')
       socket.off('users')
+      socket.off('private message')
     };
 
   }, [usernameSelected])
@@ -85,16 +102,13 @@ function App() {
     setSelectedUser(event.target.innerText)
   }
 
-  const sendPrivateMessage = () => {
-    return
-  }
-
   const messageList = serverMessages.map(msg => <li key={msg}>{msg}</li>)
   const users = userList.map(user => !user.self && <li key={user.userID}><a>{user.username}</a></li>)
 
+
   //usernameSelected controls whether the username input form or the chat is displayed
   return (
-    <>
+    <UserContext.Provider value={{ userList, setUserlist }}>
       {!usernameSelected ? (
         <div className='flex flex-col items-center mt-20'>
           <input className='textarea textarea-secondary w-5/12' placeholder='Enter username' onChange={(e) => setUsername(e.target.value)} onKeyPress = {(event) => {if (event.key == 'Enter') {onUsernameSelection()}}}></input>
@@ -104,10 +118,11 @@ function App() {
       ) : (
 
         <div className='flex flex-col items-center mt-20 h-full'>
-          {selectedUser && <div></div>}
+          <div className='badge badge-primary'>{username}</div>
+
           <div>
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="32" cy="32" r="16" stroke="#373140" stroke-width="5"/>
+              <circle cx="32" cy="32" r="16" stroke="#373140" strokeWidth="5"/>
             </svg>
           </div>
         
@@ -115,22 +130,12 @@ function App() {
             {users}
           </ul>
 
-          <div className="card w-96 bg-base-100 shadow-xl mt-20">
-            <div className="card-body">
-              <ul>{messageList}</ul>
-
-            </div>
-          </div>
-
-          <form className='flex flex-col w-6/12 justify-self-end' onSubmit={sendMessage}>
-            <input className="textarea textarea-primary mt-10 w-full h-42" type = 'text' placeholder="Write a message" id='message' name='message' value={message} onKeyPress = {(event) => {if (event.key == 'Enter') {sendMessage()}}} onChange = {(e) => {setMessage(e.target.value)}}></input>
-            <button className='btn mt-4 self-end' type='submit'>Send</button>
-          </form>
+          {selectedUser && <Chat socket={socket} user={selectedUser} />}
 
         </div> 
 
       )}
-    </>
+    </UserContext.Provider>
   )
 }
 

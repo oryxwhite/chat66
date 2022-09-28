@@ -54,11 +54,13 @@ io.on("connection", (socket) => {
   socket.broadcast.emit("user connected", {
     userID: socket.id,
     username: socket.username,
+    messages: []
   });
 });
 
 io.on('connection', (socket) => {
   socket.on('private message', ({ content, to }) => {
+    console.log(content, to)
     socket.to(to).emit('private message', {
       content,
       from: socket.id
