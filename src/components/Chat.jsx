@@ -18,6 +18,7 @@ export default function Chat({ socket, user}) {
             return usr
             })
         )
+        setPrivateMessage('')
     }    
 
     const messageList = () => {
@@ -31,19 +32,19 @@ export default function Chat({ socket, user}) {
     }
 
     return (
-        <>
-            <div className="card w-96 bg-base-100 shadow-xl mt-20">
+        <div className='flex flex-col items-center'>
+            <div className="card w-96 h-80 bg-base-100 shadow-xl mt-20">
                 <div className="card-body">
                     <ul>{messageList()}</ul>
                 </div>
             </div>
 
-            <form className='flex flex-col w-6/12 justify-self-end' onSubmit={sendPrivateMessage}>
-                <input className="textarea textarea-primary mt-10 w-full h-42" type = 'text' placeholder="Write a message" id='privatemessage' name='privatemessage' value={privateMessage} onKeyPress = {(event) => {if (event.key == 'Enter') {null}}} onChange = {(e) => {setPrivateMessage(e.target.value)}}></input>
+            <form className='flex flex-col w-10/12 self-end' onSubmit={sendPrivateMessage}>
+                <input className="textarea textarea-primary mt-10 w-full h-42" type = 'text' placeholder="Write a message" id='privatemessage' name='privatemessage' value={privateMessage} onKeyPress = {(event) => {if (event.key == 'Enter') {sendPrivateMessage}}} onChange = {(e) => {setPrivateMessage(e.target.value)}}></input>
                 <button className='btn mt-4 self-end' type='submit'>Send</button>
             </form>
         
-        </>
+        </div>
     )
 }
 
