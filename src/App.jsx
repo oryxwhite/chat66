@@ -138,7 +138,7 @@ function App() {
             </svg>
           </div>
           <div className='flex'>
-          <ul className="menu p-2 rounded-box bg-base-100 w-56 h-[360px] shadow-xl mt-10" onClick={handleUsernameClick}>
+          <ul className="menu p-2 mr-10 rounded-box bg-base-100 w-56 h-[360px] shadow-xl mt-10" onClick={handleUsernameClick}>
             <li className="menu-title my-2">
               <span>Friends</span>
             </li>
