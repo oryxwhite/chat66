@@ -25,7 +25,7 @@ export default function Chat({ socket, user}) {
         const userMessages = []
         userList.forEach(usr => {
             if (usr.username == user) {
-                usr.messages.forEach(msg => userMessages.push(<li>{msg.content}</li>))
+                usr.messages.forEach(msg => userMessages.push(<li><div className='badge p-4'>{msg.content}</div></li>))
             }
         })
         return userMessages
@@ -33,7 +33,7 @@ export default function Chat({ socket, user}) {
 
     return (
         <div className='flex flex-col items-center'>
-            <div className="card w-96 h-80 bg-base-100 shadow-xl mt-20">
+            <div className="card w-96 h-80 bg-base-100 shadow-lg mt-20">
                 <div className="card-body">
                     <ul>{messageList()}</ul>
                 </div>
