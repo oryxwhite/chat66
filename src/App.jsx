@@ -1,10 +1,11 @@
 /*  TODO
 --alert when user connected, transition animations
---username Component
 --add alert for new messages, display number of messages from user
+--profile pic/icon/avatar
 --refactor on 'chat message', messageList, sendMessage to group messenging
 --mobile design
 --persistant id using sessions and local storage
+  --online/offline icon for each user
 --chat history using db
 */
 
@@ -15,8 +16,10 @@ import './assets/ellipse.svg'
 import Chat from './components/Chat.jsx'
 import Circle from './components/Circle'
 import { UserContext } from './UserContext'
+// import Test from './components/Test'
 
 const socket = io(import.meta.env.VITE_SERVER_IP, { autoConnect: false })
+const sessionID = localStorage.getItem('sessionID')
 
 function App() {
   const [usernameSelected, setUsernameSelected] = useState(false)
@@ -27,15 +30,27 @@ function App() {
   const [serverMessages, addServerMessage] = useState([])
   const [userList, setUserlist] = useState([])
   const [selectedUser, setSelectedUser] = useState(null)
-  const [test, setTest] = useState(1)
+  // const [test, setTest] = useState(1)
+  console.log(usernameSelected)
+  console.log(sessionID)
+  console.log(socket)
 
-  console.log(test)
 
   function onUsernameSelection(event) {
     setUsernameSelected(true)
     socket.auth = { username }
     socket.connect()
+    console.log('onusernameselection called')
   }
+
+  useEffect(() => {
+    if (sessionID != 'undefined') {
+      setUsernameSelected(true)
+      socket.auth = { sessionID }
+      socket.connect()
+      console.log('if sessionID called')
+    }
+  }, [])
 
   useEffect(() => {
     // socket.on('connect', () => {
@@ -51,12 +66,12 @@ function App() {
       addServerMessage((prev) => [...prev, msg])
     })
 
-    socket.on("connect_error", (err) => {
-      if (err.message === "invalid username") {
-        setUsernameSelected(false)
-      }
-      console.log('username error')
-    });
+    // socket.on("connect_error", (err) => {
+    //   if (err.message === "invalid username") {
+    //     setUsernameSelected(false)
+    //   }
+    //   console.log('username error')
+    // });
 
     socket.on('users', (users) => {
       users.forEach((user) => {
@@ -88,6 +103,16 @@ function App() {
               return usr
           })    
       )
+  })
+
+  socket.on("session", ({ sessionID, userID }) => {
+    // attach the session ID to the next reconnection attempts
+    socket.auth = { sessionID }
+    // store it in localStorage
+    localStorage.setItem('sessionID', sessionID)
+    // save the ID of the user
+    socket.userID = userID
+    
   })
     
     return () => {
@@ -131,9 +156,10 @@ function App() {
 
       ) : (
 
-        <div className='flex flex-col items-center mt-20 h-full'>
+        <div className='flex flex-col items-center mt-1 0 h-full p-10 w-8/12 m-auto rounded-3xl'>
           <div className='badge badge-primary'>{username}</div>
           <Circle size={"64"} color={"#FF7AC6"}/>
+          {/* <Test setTest={setTest} test={test}/> */}
           <div className='flex'>
             <ul className="menu p-2 mr-10 rounded-box bg-base-200 w-56 h-[360px] shadow-lg mt-10" onClick={handleUsernameClick}>
               <li className="menu-title my-2">
