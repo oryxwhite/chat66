@@ -16,66 +16,55 @@ import './assets/ellipse.svg'
 import Chat from './components/Chat.jsx'
 import Circle from './components/Circle'
 import { UserContext } from './UserContext'
-// import Test from './components/Test'
+import socket from './socket'
 
-const socket = io(import.meta.env.VITE_SERVER_IP, { autoConnect: false })
-const sessionID = localStorage.getItem('sessionID')
 
 function App() {
   const [usernameSelected, setUsernameSelected] = useState(false)
   const [username, setUsername] = useState('')  
-  // const [isConnected, setIsConnected] = useState(socket.connected);
-  // const [id, setId] = useState()
-  const [message, setMessage] = useState('')
-  const [serverMessages, addServerMessage] = useState([])
   const [userList, setUserlist] = useState([])
   const [selectedUser, setSelectedUser] = useState(null)
-  // const [test, setTest] = useState(1)
-  console.log(usernameSelected)
+  
+  let sessionID = localStorage.getItem('sessionID')
+  if (sessionID == 'undefined') {sessionID = undefined}
   console.log(sessionID)
+  console.log(usernameSelected)
   console.log(socket)
-
 
   function onUsernameSelection(event) {
     setUsernameSelected(true)
     socket.auth = { username }
+    localStorage.setItem('username', username)
+    
     socket.connect()
     console.log('onusernameselection called')
   }
 
   useEffect(() => {
-    if (sessionID != 'undefined') {
-      setUsernameSelected(true)
+    if (sessionID) {
       socket.auth = { sessionID }
+      console.log(socket.auth)
+      socket.username = localStorage.getItem('username')
+      setUsername(socket.username)
       socket.connect()
+      setUsernameSelected(true)
+
       console.log('if sessionID called')
     }
   }, [])
 
   useEffect(() => {
-    // socket.on('connect', () => {
-    //   setIsConnected(true);
-    //   setId(socket.id)
-    // });
-
-    // socket.on('disconnect', () => {
-    //   setIsConnected(false);
-    // });
-
-    socket.on('chat message', (msg) => {
-      addServerMessage((prev) => [...prev, msg])
-    })
-
     // socket.on("connect_error", (err) => {
     //   if (err.message === "invalid username") {
     //     setUsernameSelected(false)
     //   }
     //   console.log('username error')
     // });
-
+    console.log('useEffect runs')
     socket.on('users', (users) => {
+      console.log(users)
       users.forEach((user) => {
-        user.self = user.userID === socket.id
+        user.self = user.userID === socket.userID
         setUserlist(prev => [...prev, user])
       })
     })
@@ -112,32 +101,25 @@ function App() {
     localStorage.setItem('sessionID', sessionID)
     // save the ID of the user
     socket.userID = userID
-    
+    // localStorage.setItem('userID', userID)
+    console.log('session recieved from server ' + sessionID)
   })
     
     return () => {
-      // socket.off('connect');
-      // socket.off('disconnect');
-      socket.off('chat message')
       socket.off('connect_error')
       socket.off('user connected')
+      socket.off('user disconnected')
       socket.off('users')
       socket.off('private message')
+      socket.off('session')
     };
 
-  }, [usernameSelected])
-
-  const sendMessage = (event) => {
-    event.preventDefault()
-    socket.emit('chat message', username + ":  " + message)
-    setMessage('')
-  }
+  }, [])
 
   const handleUsernameClick = (event) => {
     setSelectedUser(event.target.innerText)
   }
 
-  // const messageList = serverMessages.map(msg => <li key={msg}>{msg}</li>)
   const users = userList.map(user => !user.self && 
     <li className='mb-4' key={user.userID}>
     <a className={selectedUser == user.username ? "active" : ""}>

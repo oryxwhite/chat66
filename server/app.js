@@ -24,17 +24,6 @@ app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../dist', 'index.html'))
 })
 
-io.on('connection', (socket) => {
-    socket.on('chat message', (msg) => {
-        console.log(msg)
-        io.emit('chat message', msg)
-    })
-})
-
-io.on('connection', (socket) => {
-    console.log('a user connected  ' + socket.id);
-  });
-
 // handles sessionID, userID, and username
 
 io.use((socket, next) => {
@@ -44,7 +33,7 @@ io.use((socket, next) => {
 
     const session = sessionStore.findSession(sessionID)
     if (session) {
-      socket.sessionId = sessionID
+      socket.sessionID = sessionID
       socket.userID = session.userID
       socket.username = session.username
       return next()
@@ -60,18 +49,22 @@ io.use((socket, next) => {
   socket.sessionID = randomID()
   socket.userID = randomID()
   socket.username = username;
-  console.log(socket.username)
+  console.log(socket.username, socket.sessionID, socket.userID)
   next();
 });
 
 
 io.on("connection", (socket) => {
   // persist session
-  sessionStore.saveSession(socket.sessionID, {
-    userID: socket.userID,
-    username: socket.username,
-    connected: true,
-  })
+  console.log(socket.sessionID)
+
+  if (socket.sessionID) {
+    sessionStore.saveSession(socket.sessionID, {
+      userID: socket.userID,
+      username: socket.username,
+      connected: true,
+    })
+}
 
   // emit session details
   socket.emit('session', {
@@ -128,9 +121,6 @@ io.on("connection", (socket) => {
     }
   })
 });
-
-
-
 
 server.listen(process.env.PORT, () => {
     console.log('Listening on port ' + process.env.PORT)
