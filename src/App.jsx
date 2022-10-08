@@ -5,13 +5,15 @@
 --refactor on 'chat message', messageList, sendMessage to group messenging
 --mobile design
 --persistant id using sessions and local storage
+  --refactor 'user disconnected' handler to track 'connected' variable instead of adding and subtracting from the userList
+  --AND refactor userList display funciton to track 'connected' variable
   --online/offline icon for each user
 --chat history using db
 */
 
 import { useState, useEffect, createContext } from 'react'
 import './App.css'
-import io from 'socket.io-client'
+// import io from 'socket.io-client'
 import './assets/ellipse.svg'
 import Chat from './components/Chat.jsx'
 import Circle from './components/Circle'
@@ -30,6 +32,7 @@ function App() {
   console.log(sessionID)
   console.log(usernameSelected)
   console.log(socket)
+  console.log(userList)
 
   function onUsernameSelection(event) {
     setUsernameSelected(true)
@@ -61,6 +64,7 @@ function App() {
     //   console.log('username error')
     // });
     console.log('useEffect runs')
+
     socket.on('users', (users) => {
       console.log(users)
       users.forEach((user) => {
@@ -70,14 +74,35 @@ function App() {
     })
 
     socket.on('user connected', (user) => {
-      setUserlist(prev => [...prev, user])
-    })
+      setUserlist(current => {
+        console.log(current)
+        let existingUser = current.find(usr => usr.userID == user.userID)
+        console.log(existingUser)
+        if (!existingUser) {return [...current, user]}
+        else {
+          console.log('update user')
+          return current.map(usr => 
+            {if (usr.userID == user.userID) [
+              usr.connected = true]
+              return usr
+            }
+          )
+        }
+      })   
+      }
+    )
 
-    socket.on('user disconnected', (ID) => {
-      console.log(ID)
-      setUserlist(current => 
-        current.filter(usr => usr.userID !== ID)
-      )
+    socket.on('user disconnected', (userID) => {
+
+      setUserlist(current =>
+        current.map(usr => {
+          if (usr.userID == userID) {
+            usr.connected = false
+            return usr
+            // console.log('set user to disconnected' + usr)
+          }
+          return usr
+        }))
     })
 
     socket.on('private message', ({ content, from}) => {
@@ -120,7 +145,7 @@ function App() {
     setSelectedUser(event.target.innerText)
   }
 
-  const users = userList.map(user => !user.self && 
+  const users = userList.map(user => (!user.self & user.connected) && 
     <li className='mb-4' key={user.userID}>
     <a className={selectedUser == user.username ? "active" : ""}>
     <Circle size={"32"} color={"#373740"} />
