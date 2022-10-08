@@ -1,14 +1,14 @@
 /*  TODO
---alert when user connected, transition animations
+--online/offline icon for each user
+--ntransition animations
 --add alert for new messages, display number of messages from user
 --profile pic/icon/avatar
---refactor on 'chat message', messageList, sendMessage to group messenging
 --mobile design
---persistant id using sessions and local storage
-  --refactor 'user disconnected' handler to track 'connected' variable instead of adding and subtracting from the userList
-  --AND refactor userList display funciton to track 'connected' variable
-  --online/offline icon for each user
+
+--persistant messages
 --chat history using db
+--group messenging
+
 */
 
 import { useState, useEffect, createContext } from 'react'
@@ -29,16 +29,15 @@ function App() {
   
   let sessionID = localStorage.getItem('sessionID')
   if (sessionID == 'undefined') {sessionID = undefined}
-  console.log(sessionID)
-  console.log(usernameSelected)
-  console.log(socket)
+  // console.log(sessionID)
+  // console.log(usernameSelected)
+  // console.log(socket)
   console.log(userList)
 
   function onUsernameSelection(event) {
     setUsernameSelected(true)
     socket.auth = { username }
     localStorage.setItem('username', username)
-    
     socket.connect()
     console.log('onusernameselection called')
   }
@@ -46,12 +45,11 @@ function App() {
   useEffect(() => {
     if (sessionID) {
       socket.auth = { sessionID }
-      console.log(socket.auth)
+      // console.log(socket.auth)
       socket.username = localStorage.getItem('username')
       setUsername(socket.username)
       socket.connect()
       setUsernameSelected(true)
-
       console.log('if sessionID called')
     }
   }, [])
@@ -63,12 +61,15 @@ function App() {
     //   }
     //   console.log('username error')
     // });
-    console.log('useEffect runs')
+    // console.log('useEffect runs')
 
     socket.on('users', (users) => {
-      console.log(users)
+      // console.log(users)
       users.forEach((user) => {
         user.self = user.userID === socket.userID
+        user.messages.forEach((message) => {
+          message.fromSelf = message.from === socket.userID
+        })
         setUserlist(prev => [...prev, user])
       })
     })
