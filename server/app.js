@@ -20,10 +20,10 @@ const { InMemoryMessageStore } = require('./messageStore')
 const sessionStore = new InMemorySessionStore()
 const messageStore = new InMemoryMessageStore()
 
-app.use(express.static(path.resolve(__dirname, '../dist')))
+app.use(express.static(path.resolve(__dirname, '../client/dist')))
 
 app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../dist', 'index.html'))
+    res.sendFile(path.resolve(__dirname, '../client/dist', 'index.html'))
 })
 
 // handles sessionID, userID, and username
