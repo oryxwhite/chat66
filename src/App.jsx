@@ -1,22 +1,25 @@
 /*  TODO
---online/offline icon for each user
---ntransition animations
+--clean up code and split up into components
 --add alert for new messages, display number of messages from user
 --profile pic/icon/avatar
+--emoji support
 --mobile design
+--transition animations
 
---persistant messages
+--user auth
 --chat history using db
+--redis cache?  
 --group messenging
 
 */
 
 import { useState, useEffect, createContext } from 'react'
 import './App.css'
-// import io from 'socket.io-client'
 import './assets/ellipse.svg'
 import Chat from './components/Chat.jsx'
 import Circle from './components/Circle'
+import User from './components/User'
+import Login from './components/Login'
 import { UserContext } from './UserContext'
 import socket from './socket'
 
@@ -67,6 +70,7 @@ function App() {
       // console.log(users)
       users.forEach((user) => {
         user.self = user.userID === socket.userID
+        user.hasNewMessages = false
         user.messages.forEach((message) => {
           message.fromSelf = message.from === socket.userID
         })
@@ -112,7 +116,7 @@ function App() {
           current.map(usr => {
               if (usr.userID == from) {
                   usr.messages.push({ content, fromSelf: false})
-                  //TODO: add hasNewMessages flag
+                  if (usr != selectedUser) {usr.hasNewMessages = true}
                   return usr
               }
               return usr
@@ -143,31 +147,27 @@ function App() {
   }, [])
 
   const handleUsernameClick = (event) => {
-    setSelectedUser(event.target.innerText)
+    setSelectedUser(event.target.innerText.split('\n')[0])
+    setUserlist(current => {
+      return current.map(usr => {
+        if (usr.username == selectedUser) {usr.hasNewMessages = false}
+        return usr
+      })
+
+    })
   }
 
-  const users = userList.map(user => (!user.self & user.connected) && 
-    <li className='mb-4' key={user.userID}>
-    <a className={selectedUser == user.username ? "active" : ""}>
-    <Circle size={"32"} color={"#373740"} />
-    {user.username}</a></li>)
-
+  const users = userList.map(user => (!user.self) && <User user={user} selectedUser={selectedUser}/>)
 
   //usrnameSelected controls whether the username input form or the chat is displayed
   return (
     <UserContext.Provider value={{ userList, setUserlist }}>
-      {!usernameSelected ? (
-        <div className='flex flex-col items-center mt-20'>
-          <input className='textarea textarea-secondary w-5/12' placeholder='Enter username' onChange={(e) => setUsername(e.target.value)} onKeyPress = {(event) => {if (event.key == 'Enter') {onUsernameSelection()}}}></input>
-          <button className='btn mt-4 h-10 text-xs' onClick={onUsernameSelection}>Submit</button>
-        </div>
-
+      {!usernameSelected ? (<Login setUsername={setUsername} onUsernameSelection={onUsernameSelection}/>
       ) : (
 
         <div className='flex flex-col items-center mt-1 0 h-full p-10 w-8/12 m-auto rounded-3xl'>
           <div className='badge badge-primary'>{username}</div>
           <Circle size={"64"} color={"#FF7AC6"}/>
-          {/* <Test setTest={setTest} test={test}/> */}
           <div className='flex'>
             <ul className="menu p-2 mr-10 rounded-box bg-base-200 w-56 h-[360px] shadow-lg mt-10" onClick={handleUsernameClick}>
               <li className="menu-title my-2">
