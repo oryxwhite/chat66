@@ -1,11 +1,21 @@
 /*  TODO
+////features////
 --clean up code and split up into components
 --add alert for new messages, display number of messages from user
+--display message metadata - date/time/?
+--add scrolling, autoscroll for message window
 --profile pic/icon/avatar
---emoji support
---mobile design
---transition animations
+--emoji picker
 
+////styling////
+--RESPONSIVE design!
+--transition animations
+--fix friend list container size
+
+////debugging////
+--duplicate user bug
+
+////backend////
 --user auth
 --chat history using db
 --redis cache?  
@@ -20,6 +30,7 @@ import Chat from './components/Chat.jsx'
 import Circle from './components/Circle'
 import User from './components/User'
 import Login from './components/Login'
+import UserList from './components/UserList'
 import { UserContext } from './UserContext'
 import socket from './socket'
 
@@ -157,7 +168,7 @@ function App() {
     })
   }
 
-  const users = userList.map(user => (!user.self) && <User user={user} selectedUser={selectedUser}/>)
+  // const users = userList.map(user => (!user.self) && <User user={user} selectedUser={selectedUser}/>)
 
   //usrnameSelected controls whether the username input form or the chat is displayed
   return (
@@ -165,20 +176,14 @@ function App() {
       {!usernameSelected ? (<Login setUsername={setUsername} onUsernameSelection={onUsernameSelection}/>
       ) : (
 
-        <div className='flex flex-col items-center mt-1 0 h-full p-10 w-8/12 m-auto rounded-3xl'>
+        <main className='flex flex-col items-center mt-1 0 h-full p-10 w-10/12 m-auto rounded-3xl'>
           <div className='badge badge-primary'>{username}</div>
           <Circle size={"64"} color={"#FF7AC6"}/>
           <div className='flex'>
-            <ul className="menu p-2 mr-10 rounded-box bg-base-200 w-56 h-[360px] shadow-lg mt-10" onClick={handleUsernameClick}>
-              <li className="menu-title my-2">
-                <span>Friends</span>
-              </li>
-              {users}
-            </ul>
-          
+            <UserList selectedUser={selectedUser} handleUsernameClick={handleUsernameClick} />
             {selectedUser && <Chat socket={socket} user={selectedUser} />}
           </div>
-        </div> 
+        </main> 
 
       )}
     </UserContext.Provider>
