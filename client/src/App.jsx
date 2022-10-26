@@ -1,16 +1,16 @@
 /*  TODO
 ////features////
---clean up code and split up into components
---add alert for new messages, display number of messages from user
+--display number of messages from user, display last message recieved
 --display message metadata - date/time/?
---add scrolling, autoscroll for message window
---profile pic/icon/avatar
+--profile avatar w dicebear
 --emoji picker
+--search bar
 
 ////styling////
---RESPONSIVE design!
+--style scroll bar
 --transition animations
---fix friend list container size
+--fonts
+--mobile version
 
 ////debugging////
 --duplicate user bug
@@ -27,12 +27,11 @@ import { useState, useEffect, createContext } from 'react'
 import './App.css'
 import './assets/ellipse.svg'
 import Chat from './components/Chat.jsx'
-import Circle from './components/Circle'
-import User from './components/User'
 import Login from './components/Login'
 import UserList from './components/UserList'
 import { UserContext } from './UserContext'
 import socket from './socket'
+import Header from './components/Header'
 
 
 function App() {
@@ -176,10 +175,9 @@ function App() {
       {!usernameSelected ? (<Login setUsername={setUsername} onUsernameSelection={onUsernameSelection}/>
       ) : (
 
-        <main className='flex flex-col items-center mt-1 0 h-full p-10 w-10/12 m-auto rounded-3xl'>
-          <div className='badge badge-primary'>{username}</div>
-          <Circle size={"64"} color={"#FF7AC6"}/>
-          <div className='flex'>
+        <main className='h-screen'>
+          {/* <Header username={username} /> */}
+          <div className='container mx-auto p-10 flex h-full justify-between'>
             <UserList selectedUser={selectedUser} handleUsernameClick={handleUsernameClick} />
             {selectedUser && <Chat socket={socket} user={selectedUser} />}
           </div>

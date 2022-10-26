@@ -13,8 +13,6 @@ export default function User({ user, selectedUser }) {
                 {user.hasNewMessages && <div className="badge ml-auto badge-accent self-center justify-self-enter"></div>}
             </a>
         </li>
-        
-
     </>
     )
 }

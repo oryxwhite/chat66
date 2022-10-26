@@ -8,7 +8,7 @@ export default function UserList({ selectedUser, handleUsernameClick }) {
 
     return (
         <>
-            <ul className="menu p-2 mr-10 rounded-box bg-base-200 w-56 h-[360px] shadow-lg mt-10 overflow-y-auto" onClick={handleUsernameClick}>
+            <ul className="menu container w-5/12 p-2 mr-10 rounded-box bg-base-200 shadow-lg mt-10 overflow-x-auto" onClick={handleUsernameClick}>
               <li className="menu-title my-2">
                 <span>Friends</span>
               </li>
