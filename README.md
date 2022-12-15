@@ -1,7 +1,13 @@
-## Chat66 - A React / Socket.IO chat app
+## Chat66 - A React chat app
 
-This is a simple chat app built with React and Tailwind on the frontend and Node and Socket.IO on the backend.
-It utilizes localStorage to persist user data between sessions.
+This is a simple chat app built with React and SocketIO.  The frontend utilizes localStorage to persist user data between sessions, and the server persists message history in an in-memory store.  
+
+This app is built with the following technologies:
+-React
+-TailwindCSS
+-DaisyUI
+-NodeJS / Express
+-SocketIO
 
 There is a live demo [here](http://159.223.99.239/)
 
